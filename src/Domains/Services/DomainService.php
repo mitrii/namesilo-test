@@ -9,7 +9,6 @@
 
 namespace App\Domains\Services;
 
-
 use App\Controllers\Dtos\DomainDto;
 use App\Domains\Models\Domain;
 use App\Domains\Models\Tld;
@@ -26,17 +25,12 @@ class DomainService
         $this->em = $em;
     }
 
-    public function getTlds()
-    {
-        return $this->em->getRepository(Tld::class)->findAll();
-    }
-
     /**
      * @param string $name
      * @param array $tlds
      * @return string[]
      */
-    public function getPossibleDomains($name, $tlds): array
+    public function getPossibleDomains(string $name, array $tlds): array
     {
         $domains = Domains::fromNameAndTlds($name, $tlds);
         return array_combine($tlds, $domains);
@@ -46,15 +40,19 @@ class DomainService
      * @param string[] $domains
      * @return array
      */
-    public function getExistsDomains($domains): array
+    public function getExistsDomains(array $domains): array
     {
         $existsDomains = $this->em->getRepository(Domain::class)->findByDomain($domains);
         return ObjectArrays::createFieldArray($existsDomains, 'domain');
     }
 
-    public function getDomainTldsInfo($domain)
+    /**
+     * @param string $domain
+     * @return \Generator|null
+     */
+    public function getDomainTldsInfo(string $domain): ?\Generator
     {
-        $tlds = $this->getTlds();
+        $tlds = $this->em->getRepository(Tld::class)->findAll();
         $possibleDomains = $this->getPossibleDomains($domain, ObjectArrays::createFieldArray($tlds, 'tld'));
         $existsDomains = $this->getExistsDomains($possibleDomains);
 
