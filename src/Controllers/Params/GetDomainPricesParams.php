@@ -2,7 +2,6 @@
 
 namespace App\Controllers\Params;
 
-use App\Utils\Domains;
 use yii\base\Model;
 
 class GetDomainPricesParams extends Model
@@ -15,7 +14,7 @@ class GetDomainPricesParams extends Model
         return [
             ['search', 'required'],
             ['search', function ($attribute, $params) {
-                if (!Domains::valid($this->$attribute)) {
+                if (!preg_match('/^(?!\-)(?:[a-zA-Z\d\-]{0,62}[a-zA-Z\d]){1,126}$/', $this->$attribute)) {
                     $this->addError($attribute, 'Invalid domain');
                 }
             }]
