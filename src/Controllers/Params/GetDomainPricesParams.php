@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Params;
 
+use App\Utils\Domains;
 use yii\base\Model;
 
 class GetDomainPricesParams extends Model
@@ -12,7 +13,12 @@ class GetDomainPricesParams extends Model
     public function rules()
     {
         return [
-            ['search', 'required']
+            ['search', 'required'],
+            ['search', function ($attribute, $params) {
+                if (!Domains::valid($this->$attribute)) {
+                    $this->addError($attribute, 'Invalid domain');
+                }
+            }]
         ];
     }
 
