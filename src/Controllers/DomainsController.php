@@ -4,11 +4,16 @@ namespace App\Controllers;
 
 use App\Controllers\Dtos\DomainDto;
 use App\Controllers\Params\GetDomainPricesParams;
+use App\Utils\Domains;
+use App\Utils\ObjectArrays;
+use Doctrine\ORM\EntityManager;
 use Yii;
 use yii\filters\ContentNegotiator;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\Response;
+use App\Domains\Models\Domain;
+use App\Domains\Models\Tld;
 
 class DomainsController extends Controller
 {
@@ -40,14 +45,23 @@ class DomainsController extends Controller
             throw new BadRequestHttpException();
         }
 
-        // todo найти список tld из таблицы
-        // todo создать список доменов
-        // todo проверить домены на корректность имени
-        // todo проверить наличие домена в таблице domain
-        // todo создать список dto с ценами для списка доменов
+        /** @var EntityManager $entityManager */
+        $entityManager = Yii::$container->get(EntityManager::class);
+
+        $tlds = $entityManager->getRepository(Tld::class)->findAll();
+
+        $possibleDomains = Domains::fromNameAndTlds($params->search, ObjectArrays::createFieldArray($tlds, 'tld'));
+        $existsDomains = $entityManager->getRepository(Domain::class)->findByDomain($possibleDomains);
+        $existsDomains = ObjectArrays::createFieldArray($existsDomains, 'domain');
 
         /** @var DomainDto[] $dtos */
         $dtos = [];
+        foreach($tlds as $tld)
+        {
+            $domain = "{$params->search}.{$tld->tld}";
+            $dtos[] = new DomainDto($tld->tld, $domain, $tld->price, !in_array($domain, $existsDomains, true));
+        }
+
         return $dtos;
     }
 }
