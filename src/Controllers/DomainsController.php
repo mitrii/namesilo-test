@@ -37,6 +37,8 @@ class DomainsController extends Controller
      *
      * @return DomainDto[]
      * @throws BadRequestHttpException
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\di\NotInstantiableException
      */
     public function actionCheck(): array
     {
@@ -45,21 +47,13 @@ class DomainsController extends Controller
             throw new BadRequestHttpException();
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = Yii::$container->get(EntityManager::class);
-
-        $tlds = $entityManager->getRepository(Tld::class)->findAll();
-
-        $possibleDomains = Domains::fromNameAndTlds($params->search, ObjectArrays::createFieldArray($tlds, 'tld'));
-        $existsDomains = $entityManager->getRepository(Domain::class)->findByDomain($possibleDomains);
-        $existsDomains = ObjectArrays::createFieldArray($existsDomains, 'domain');
+        $domainService = Yii::$container->get('DomainService');
 
         /** @var DomainDto[] $dtos */
         $dtos = [];
-        foreach($tlds as $tld)
+        foreach ($domainService->getDomainTldsInfo($params->search) as $domainInfo)
         {
-            $domain = "{$params->search}.{$tld->tld}";
-            $dtos[] = new DomainDto($tld->tld, $domain, $tld->price, !in_array($domain, $existsDomains, true));
+            $dtos[] = DomainDto::fromArray($domainInfo);
         }
 
         return $dtos;
