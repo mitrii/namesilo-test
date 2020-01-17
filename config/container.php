@@ -15,6 +15,6 @@ return [
             $config = Setup::createAnnotationMetadataConfiguration([dirname(__DIR__) . '/src'], true, null, null, false);
             return EntityManager::create($conn, $config);
         },
-        'DomainService' => ['class' => DomainService::class],
+        DomainService::class,
     ]
 ];

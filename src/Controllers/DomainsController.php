@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\Dtos\DomainDto;
 use App\Controllers\Params\GetDomainPricesParams;
+use App\Domains\Services\DomainService;
 use App\Utils\Domains;
 use App\Utils\ObjectArrays;
 use Doctrine\ORM\EntityManager;
@@ -17,6 +18,19 @@ use App\Domains\Models\Tld;
 
 class DomainsController extends Controller
 {
+
+    /**
+     * @var DomainService
+     */
+    protected $domainService;
+
+
+    public function __construct($id, $module, DomainService $domainService,  $config = [])
+    {
+        $this->domainService = $domainService;
+        parent::__construct($id, $module, $config);
+    }
+
     /**
      * @inheritdoc
      */
@@ -37,8 +51,6 @@ class DomainsController extends Controller
      *
      * @return DomainDto[]
      * @throws BadRequestHttpException
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\di\NotInstantiableException
      */
     public function actionCheck(): array
     {
@@ -47,11 +59,9 @@ class DomainsController extends Controller
             throw new BadRequestHttpException();
         }
 
-        $domainService = Yii::$container->get('DomainService');
-
         /** @var DomainDto[] $dtos */
         $dtos = [];
-        foreach ($domainService->getDomainTldsInfo($params->search) as $domainInfo)
+        foreach ($this->domainService->getDomainTldsInfo($params->search) as $domainInfo)
         {
             $dtos[] = DomainDto::fromArray($domainInfo);
         }
