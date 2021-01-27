@@ -4,6 +4,8 @@ namespace App\Controllers\Dtos;
 
 class DomainDto
 {
+    use ConstructableFromArrayTrait;
+
     /** @var string */
     public $tld;
 

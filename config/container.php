@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Services\DomainService;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Setup;
 
@@ -13,6 +14,7 @@ return [
 
             $config = Setup::createAnnotationMetadataConfiguration([dirname(__DIR__) . '/src'], true, null, null, false);
             return EntityManager::create($conn, $config);
-        }
+        },
+        DomainService::class,
     ]
 ];
